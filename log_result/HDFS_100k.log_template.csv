@@ -1,0 +1,20 @@
+EventId,EventTemplate,Occurrences
+E2,Verification succeeded for <*>,2183
+E3,<*> Served block <*> to /<*>,407
+E5,Receiving block <*> src: /<*> dest: /<*>,23671
+E6,Received block <*> src: /<*> dest: /<*> of size <*>,31
+E7,writeBlock <*> received exception <*>,68
+E8,PacketResponder <*> for block <*> Interrupted.,1
+E9,Received block <*> of size <*> from /<*>,23447
+E10,PacketResponder <*> <*> Exception <*>,3
+E11,PacketResponder <*> for block <*> terminating,23451
+E13,Receiving empty packet for block <*>,24
+E14,Exception in receiveBlock for block <*> <*>,4
+E15,Changing block file offset of block <*> from <*> to <*> meta file offset to <*>,2
+E16,<*>:Transmitted block <*> to /<*>,27
+E18,<*> Starting thread to transfer block <*> to <*>,27
+E21,Deleting block <*> file <*>,23
+E22,BLOCK* NameSystem.allocateBlock:<*>,7940
+E25,BLOCK* ask <*> to replicate <*> to datanode(s) <*>,27
+E26,BLOCK* NameSystem.addStoredBlock: blockMap updated: <*> is added to <*> size <*>,23478
+E27,BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for <*> on <*> size <*>,1

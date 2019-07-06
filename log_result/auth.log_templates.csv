@@ -1,0 +1,24 @@
+EventId,EventTemplate,Occurrences
+Event0,* session * for user *,9571
+Event1,DIGEST-MD5 common mech free,1836
+Event2,Received signal 15; terminating.,2
+Event3,Server listening on * port 22.,4
+Event4,Did not receive identification string from 211.65.197.113 port *,227
+Event5,Accepted password for * from * port * ssh2,20
+Event6,* session opened for user * by *,4643
+Event7,New session * of user *,20
+Event8,pam_unix(su:auth): authentication failure; * * euid=0 * * rhost= user=root,9
+Event9,pam_authenticate: Authentication failure,9
+Event10,* su for root by *,25
+Event11,* /dev/pts/0 hydra:root,7
+Event12,pam_systemd(su:session): Cannot create session: Already running in a session,16
+Event13,Removed session *,19
+Event14,* /dev/pts/2 hydra:root,2
+Event15,+ /dev/pts/3 hydra:root,1
+Event16,* /dev/pts/4 monster:root,12
+Event17,Corrupted MAC on input,1
+Event18,Connection closed by 211.65.192.169,1
+Event19,* /dev/pts/0 monster:root,3
+Event20,* user admin *,2
+Event21,Received disconnect from 211.65.192.177: 11: Bye Bye,1
+Event22,Disconnecting: Too many authentication failures for root,5
