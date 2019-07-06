@@ -23,7 +23,7 @@ if __name__ == '__main__':
     feature_extractor = preprocessing.FeatureExtractor()
     x_train, events = feature_extractor.fit_transform(x_train)
 
-    model = InvariantsMiner(epsilon=epsilon, longest_invarant=longest_invariant)
+    model = InvariantsMiner(epsilon=epsilon, longest_invariant=longest_invariant)
     model.fit(x_train, events)
     print("Spent {} seconds".format(time.time() - begin))
     print("finish parse file {}, time: {}".format(train_struct_log,

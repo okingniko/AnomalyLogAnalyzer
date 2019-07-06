@@ -16,7 +16,7 @@ import time
 import os
 
 epsilon = 0.5  # threshold for estimating invariant space
-longest_invarant = 4
+longest_invariant = 4
 
 train_struct_log = 'log_result/auth.log_structured.csv'
 test_struct_log = 'log_result/auth.log_structured.csv'
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     feature_extractor = preprocessing.FeatureExtractor()
     x_train, events = feature_extractor.fit_transform(x_train)
 
-    model = InvariantsMiner(epsilon=epsilon, longest_invarant=longest_invarant)
+    model = InvariantsMiner(epsilon=epsilon, longest_invariant=longest_invariant)
     model.fit(x_train, events)
     print("Spent {} seconds".format(time.time() - begin))
     print("finish parse file {}, time: {}".format(train_struct_log,

@@ -1,10 +1,5 @@
-"""
-The interface for data preprocessing.
-
-Authors:
-    LogPAI Team
-
-"""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import pandas as pd
 import os
@@ -17,7 +12,6 @@ from itertools import compress
 
 
 class FeatureExtractor(object):
-
     def __init__(self):
         self.events = None
 
