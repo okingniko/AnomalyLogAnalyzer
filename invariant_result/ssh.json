@@ -1,0 +1,128 @@
+{
+  "EventTemplate": {
+    "Event0": "<*> session opened for user <*> <*>",
+    "Event1": "<*> session closed for user <*> <*>",
+    "Event2": "<*> password for <*> from <*> port <*> ssh2",
+    "Event3": "subsystem request for sftp by user root",
+    "Event4": "Received disconnect from <*> 0:",
+    "Event5": "Successful su for nobody by root",
+    "Event6": "+ ??? root:nobody",
+    "Event7": "<*> authentication failure; logname= uid=0 euid=0 <*> ruser= <*>",
+    "Event8": "Connection closed by 211.65.196.44 [preauth]",
+    "Event9": "Received disconnect from 127.0.0.1 port <*> Bye Bye <*>",
+    "Event10": "Disconnected from authenticating user root 127.0.0.1 port 39072 [preauth]",
+    "Event11": "<*> user <*> from 127.0.0.1 port <*>",
+    "Event12": "pam_unix(sshd:auth): check pass; user unknown",
+    "Event13": "Connection closed by <*> user <*> 127.0.0.1 port <*> [preauth]",
+    "Event14": "error: maximum authentication attempts exceeded for <*> from 127.0.0.1 port <*> ssh2 [preauth]",
+    "Event15": "Disconnecting <*> user <*> 127.0.0.1 port <*> Too many authentication failures [preauth]",
+    "Event16": "PAM <*> more authentication <*> logname= uid=0 euid=0 tty=ssh ruser= rhost=127.0.0.1 <*>",
+    "Event17": "PAM service(sshd) ignoring max retries; <*> > 3",
+    "Event18": "gkr-pam: unlocked login keyring",
+    "Event19": "New session <*> of user <*>",
+    "Event20": "Session 46 logged out. Waiting for processes to exit.",
+    "Event21": "Removed session 46.",
+    "Event22": "New seat seat0.",
+    "Event23": "Watching system buttons on /dev/input/event4 (Power Button)",
+    "Event24": "Watching system buttons on /dev/input/event0 (AT Translated Set 2 keyboard)",
+    "Event25": "Registered Authentication Agent for <*> (system bus name <*> [/usr/bin/gnome-shell], object path /org/freedesktop/PolicyKit1/AuthenticationAgent, locale zh_CN.UTF-8)",
+    "Event26": "Loaded settings from: /usr/lib/realmd/realmd-defaults.conf /usr/lib/realmd/realmd-distro.conf",
+    "Event27": "<*> daemon: startup",
+    "Event28": "starting service",
+    "Event29": "connected to bus",
+    "Event30": "claimed name on bus: org.freedesktop.realmd",
+    "Event31": "uid 0 is trying to obtain org.freedesktop.packagekit.system-sources-refresh auth (only_trusted:0)",
+    "Event32": "uid 0 obtained auth for org.freedesktop.packagekit.system-sources-refresh",
+    "Event33": "quitting realmd service after timeout",
+    "Event34": "stopping service",
+    "Event35": "Server listening on <*> port 22."
+  },
+  "Invariants": [
+    {
+      "Event0": -1.0,
+      "Event1": 1.0,
+      "Normal": true
+    },
+    {
+      "Event14": 1.0,
+      "Event15": -1.0,
+      "Normal": false
+    },
+    {
+      "Event14": -1.0,
+      "Event17": 1.0,
+      "Normal": false
+    },
+    {
+      "Event16": 1.0,
+      "Event17": -1.0,
+      "Normal": false
+    },
+    {
+      "Event19": 1.0,
+      "Event20": -4.0,
+      "Normal": true
+    },
+    {
+      "Event19": 1.0,
+      "Event21": -4.0,
+      "Normal": true
+    },
+    {
+      "Event19": 1.0,
+      "Event22": -2.0,
+      "Normal": true
+    },
+    {
+      "Event19": 1.0,
+      "Event23": -2.0,
+      "Normal": true
+    },
+    {
+      "Event19": 1.0,
+      "Event24": -2.0,
+      "Normal": true
+    },
+    {
+      "Event26": -2.0,
+      "Event27": 1.0,
+      "Normal": true
+    },
+    {
+      "Event26": 1.0,
+      "Event28": -1.0,
+      "Normal": true
+    },
+    {
+      "Event26": 1.0,
+      "Event29": -1.0,
+      "Normal": true
+    },
+    {
+      "Event26": 1.0,
+      "Event30": -1.0,
+      "Normal": true
+    },
+    {
+      "Event26": 1.0,
+      "Event33": -1.0,
+      "Normal": true
+    },
+    {
+      "Event26": 1.0,
+      "Event34": -1.0,
+      "Normal": true
+    },
+    {
+      "Event5": -1.0,
+      "Event6": 1.0,
+      "Normal": true
+    },
+    {
+      "Event14": 1.0,
+      "Event7": -1.0,
+      "Event9": 1.0,
+      "Normal": false
+    }
+  ]
+}

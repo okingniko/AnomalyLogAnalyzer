@@ -1,0 +1,197 @@
+{
+  "EventTemplate": {
+    "Event0": "Receiving block <*> src <*> <*> dest <*>",
+    "Event1": "BLOCK* NameSystem.allocateBlock <*>,575061",
+    "Event2": "PacketResponder <*> for block <*>",
+    "Event3": "Received block <*> of size <*>",
+    "Event4": "BLOCK* NameSystem.addStoredBlock blockMap updated <*> is added to <*> size <*>",
+    "Event5": "<*> Transmitted block <*> to <*>",
+    "Event6": "<*> Starting thread to transfer block <*> to <*> <*>",
+    "Event7": "BLOCK* ask <*>  to replicate <*> to datanode(s) <*> <*>",
+    "Event8": "<*> Served block <*> to <*>",
+    "Event9": "Verification succeeded for <*>",
+    "Event10": "writeBlock <*> received exception <*>",
+    "Event11": "PacketResponder <*> 2 Exception java.io.EOFException",
+    "Event12": "writeBlock <*> received exception java.io.IOException Could not read from stream",
+    "Event13": "Deleting block <*> file <*>",
+    "Event14": "Receiving empty packet for block <*>",
+    "Event15": "<*> <*> <*> <*> <*> blk_-3102267849859399193 java.io.IOException Connection reset by peer",
+    "Event16": "BLOCK* NameSystem.addStoredBlock Redundant addStoredBlock request received for <*> on <*>  size <*>",
+    "Event17": "<*> <*> <*> <*> java.net.SocketTimeoutException <*> millis timeout while waiting for channel to be ready for <*> ch java.nio.channels.SocketChannel[connected local <*> <*> remote <*>",
+    "Event18": "<*> <*> <*> <*> <*> blk_4241467193520768333 java.io.IOException Connection reset by peer",
+    "Event19": "<*> <*> <*> <*> java.io.InterruptedIOException Interruped while waiting for IO on channel <*> <*> <*> <*> <*> <*> <*> <*> millis timeout left.",
+    "Event20": "Exception in receiveBlock for block <*>",
+    "Event21": "Changing block file offset of block <*> from 0 to <*> meta file offset to <*>",
+    "Event22": "Exception <*> <*> <*> <*> <*> java.io.IOException Connection reset by peer",
+    "Event23": "<*> Exception writing block <*> to mirror <*>",
+    "Event24": "PacketResponder <*> <*> Exception java.io.IOException Broken pipe",
+    "Event25": "writeBlock <*> received exception java.io.IOException Block <*> is valid and cannot be written to.",
+    "Event26": "<*> Failed to transfer <*> to <*>  got java.io.IOException Connection reset by peer",
+    "Event27": "BLOCK* NameSystem.delete <*> is added to invalidSet of <*>",
+    "Event28": "Unexpected error trying to delete block <*> BlockInfo not found in volumeMap.",
+    "Event29": "BLOCK* <*> <*> <*>  <*> it does not belong to any file.",
+    "Event30": "<*> Got exception while serving <*> to <*>",
+    "Event31": "Reopen Block <*>",
+    "Event32": "PacketResponder <*> <*> Exception java.nio.channels.ClosedByInterruptException",
+    "Event33": "PendingReplicationMonitor timed out block <*>",
+    "Event34": "Adding an already existing block <*>",
+    "Event35": "PacketResponder <*> 1 Exception java.io.IOException The stream is closed"
+  },
+  "Invariants": [
+    {
+      "Event0": 1.0,
+      "Event1": -3.0,
+      "Normal": true
+    },
+    {
+      "Event0": 1.0,
+      "Event2": -1.0,
+      "Normal": true
+    },
+    {
+      "Event0": 1.0,
+      "Event3": -1.0,
+      "Normal": true
+    },
+    {
+      "Event0": -1.0,
+      "Event4": 1.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event11": -93.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event15": -1767.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event17": -40.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event18": -881.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event19": -21.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event20": -10.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event21": -23.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event22": -98.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event23": -41.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event24": -294.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event26": -1176.0,
+      "Normal": true
+    },
+    {
+      "Event10": -241.0,
+      "Event28": 1.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event29": -540.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event31": -321.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event32": -131.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event33": -1163.0,
+      "Normal": true
+    },
+    {
+      "Event10": 1.0,
+      "Event35": -442.0,
+      "Normal": true
+    },
+    {
+      "Event10": -78.0,
+      "Event5": 1.0,
+      "Normal": true
+    },
+    {
+      "Event10": -77.0,
+      "Event6": 1.0,
+      "Normal": true
+    },
+    {
+      "Event10": -77.0,
+      "Event7": 1.0,
+      "Normal": true
+    },
+    {
+      "Event13": 1.0,
+      "Event27": -1.0,
+      "Normal": true
+    },
+    {
+      "Event14": 1.0,
+      "Event16": -1138.0,
+      "Normal": true
+    },
+    {
+      "Event14": -65.0,
+      "Event28": 1.0,
+      "Normal": true
+    },
+    {
+      "Event14": -135.0,
+      "Event5": 1.0,
+      "Normal": true
+    },
+    {
+      "Event14": -138.0,
+      "Event6": 1.0,
+      "Normal": true
+    },
+    {
+      "Event14": -138.0,
+      "Event7": 1.0,
+      "Normal": true
+    },
+    {
+      "Event16": -403.0,
+      "Event29": 1.0,
+      "Normal": true
+    }
+  ]
+}

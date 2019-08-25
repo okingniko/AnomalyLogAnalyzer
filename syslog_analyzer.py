@@ -15,38 +15,54 @@ from detector import *
 import time
 import os
 
+# struct_log = 'log_result/perf_50w.log_structured.csv'  # The structured log file
+# struct_log = 'log_result/auth.log_structured.csv'  # The structured log file
+label_file = ''
 epsilon = 0.5  # threshold for estimating invariant space
-longest_invariant = 4
 
-train_struct_log = 'log_result/auth.log_structured.csv'
-test_struct_log = 'log_result/auth.log_structured.csv'
+# struct_log_list = ['log_result/perf_2k.log_structured.csv', 'log_result/perf_5k.log_structured.csv',
+#                    'log_result/perf_1w.log_structured.csv', 'log_result/perf_2w.log_structured.csv',
+#                    'log_result/perf_5w.log_structured.csv', 'log_result/perf_10w.log_structured.csv',
+#                    'log_result/perf_20w.log_structured.csv', 'log_result/perf_50w.log_structured.csv',
+#                    'log_result/perf_100w.log_structured.csv']
+# struct_log_list = ['log_result/auth_mix_online.log_structured.csv']
+struct_log_list = ['log_result/auth_mix.log_structured.csv']
+#struct_log_list = ['log_result/suricata.log_structured.csv']
 
 if __name__ == '__main__':
     print("current pid", os.getpid())
-    begin = time.time()
-    print("begin parse file {}, time: {}".format(train_struct_log,
-                                                 time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(time.time()))))
-    # 1. 训练阶段
-    x_train, _ = load_syslog(train_struct_log,
-                             window='session',
-                             save_csv=True)
-    feature_extractor = preprocessing.FeatureExtractor()
-    x_train, events = feature_extractor.fit_transform(x_train)
+    # time.sleep(20)
+    for struct_log in struct_log_list:
+        begin = time.time()
+        print("begin parse file {}, time: {}".format(struct_log, time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(time.time()))))
+        # Load structured log without label info
+        save_file = struct_log.split("/")[1]
+        x_train, x_test = load_syslog(struct_log,
+                                      window='session',
+                                      train_ratio=1.0,
+                                      save_csv=True,
+                                      save_file=save_file)
+        # Feature extraction
+        feature_extractor = preprocessing.FeatureExtractor()
+        x_train, events = feature_extractor.fit_transform(x_train)
 
-    model = InvariantsMiner(epsilon=epsilon, longest_invariant=longest_invariant)
-    model.fit(x_train, events)
-    print("Spent {} seconds".format(time.time() - begin))
-    print("finish parse file {}, time: {}".format(train_struct_log,
-                                                  time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(time.time()))))
+        # Model initialization and training
+        # model = InvariantsMiner(epsilon=epsilon)
+        # model.fit(x_train, events)
+        # print("Spent {} seconds".format(time.time() - begin))
+        # print("finish parse file {}, time: {}".format(struct_log, time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(time.time()))))
+        #
+        # Predict anomalies on the training set offline, and manually check for correctness
+        # print(y_train)
+        #
+        # Predict anomalies on the test set to simulate the online mode
+        # x_test may be loaded from another log file
+        # beginOnline = time.time()
+        # print("Online: begin parse file {}, time: {}".format(struct_log, time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(time.time()))))
+        # x_test = feature_extractor.transform(x_test)
+        # y_test = model.predict(x_test)
+        # print("Spend {} seconds".format(time.time() - beginOnline))
+        # print("Online: finish parse file {}, time: {}".format(struct_log, time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(time.time()))))
 
-    # 2. 在线检测阶段
-    beginOnline = time.time()
-    print("Online: begin parse file {}, time: {}".format(test_struct_log,
-                                                         time.strftime("%Y/%m/%d %H:%M:%S",
-                                                                       time.localtime(time.time()))))
-    y_test, y_idx = load_syslog(test_struct_log, window='session', save_csv=True)
-    y_test = feature_extractor.transform(y_test)
-    model.predict(y_test, y_idx)
-    print("Spend {} seconds".format(time.time() - beginOnline))
-    print("Online: finish parse file {}, time: {}".format(test_struct_log, time.strftime("%Y/%m/%d %H:%M:%S",
-                                                                                         time.localtime(time.time()))))
+        # print(y_test)
+        #
