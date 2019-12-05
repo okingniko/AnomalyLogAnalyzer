@@ -7,13 +7,13 @@ import time
 sys.path.append("../")
 from parser import *
 
-input_dir = 'data/logs/njnert_logs'  # The input directory of log file
+input_dir = 'data/logs/jslab_logs'  # The input directory of log file
 output_dir = 'log_result/'  # The output directory of parsing results
 log_file = 'auth.log'  # The input log file name
 log_format = '<IP> - - <Time> <Zone> <Content>'
 tau = 0.5  # Message type threshold (default: 0.5)
 regex = []  # Regular expression list for optional preprocessing (default: [])
-log_file_list = ['njnet_access_mix.log']
+log_file_list = ['jslab_access_mix.log']
 
 
 # nohup top -pid 88060 -i 1 > perf_parse.txt 2>&1 &
