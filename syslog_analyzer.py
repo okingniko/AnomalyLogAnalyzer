@@ -20,14 +20,7 @@ import os
 label_file = ''
 epsilon = 0.5  # threshold for estimating invariant space
 
-# struct_log_list = ['log_result/perf_2k.log_structured.csv', 'log_result/perf_5k.log_structured.csv',
-#                    'log_result/perf_1w.log_structured.csv', 'log_result/perf_2w.log_structured.csv',
-#                    'log_result/perf_5w.log_structured.csv', 'log_result/perf_10w.log_structured.csv',
-#                    'log_result/perf_20w.log_structured.csv', 'log_result/perf_50w.log_structured.csv',
-#                    'log_result/perf_100w.log_structured.csv']
-# struct_log_list = ['log_result/auth_mix_online.log_structured.csv']
 struct_log_list = ['log_result/auth_mix.log_structured.csv']
-#struct_log_list = ['log_result/suricata.log_structured.csv']
 
 if __name__ == '__main__':
     print("current pid", os.getpid())

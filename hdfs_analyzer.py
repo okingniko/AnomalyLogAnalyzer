@@ -1,16 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-''' This is a demo file for the Invariants Mining model.
-    API usage:
-        dataloader.load_syslog(): load syslog dataset
-        feature_extractor.fit_transform(): fit and transform features
-        feature_extractor.transform(): feature transform after fitting
-        model.fit(): fit the model
-        model.predict(): predict anomalies on given data
-        model.evaluate(): evaluate model accuracy with labeled data
-'''
-
 from detector import *
 import time
 import os

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*-coding: utf-8 -*-
 
-from collections import OrderedDict
 import re
+from collections import OrderedDict
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from sklearn.utils import shuffle
 
 
@@ -20,7 +20,6 @@ def load_syslog(log_file, window='session', train_ratio=0.5, save_csv=False):
 
     Returns
     -------
-
     """
 
     print('====== Input data summary ======')
@@ -104,3 +103,11 @@ def _split_data(x_data, train_ratio=0):
     # print(indexes)
     x_train = x_train[indexes]
     return x_train, x_test
+
+def load_data_instances(log_file):
+    data_df = pd.read_csv(log_file, engine='c', na_filter=False, memory_map=True, converters={"EventSequence": eval})
+    # print(data_df)
+    x_data = data_df['EventSequence'].values
+    print('Total: {} instances'.format(x_data.shape[0]))
+    # print(x_data)
+    return x_data, data_df

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*-coding: utf-8 -*-
 
+import json
 from itertools import combinations
 
 import numpy as np
@@ -8,25 +9,26 @@ from sklearn.metrics import precision_recall_fscore_support
 
 
 class InvariantsMiner(object):
-
-    def __init__(self, percentage=0.98, epsilon=0.5, longest_invariant=None, scale_list=[1, 2, 3]):
+    def __init__(self, percentage=0.98, epsilon=0.5, longest_invarant=None, scale_list=[1, 2, 3]):
         """ The Invariants Mining model for anomaly detection
 
         Attributes
         ----------
             percentage: float, percentage of samples satisfying the condition that |X_j * V_i| < epsilon
             epsilon: float, the threshold for estimating the invariant space
-            longest_invariant: int, the specified maximal length of invariant, default to None. Stop 
-                searching when the invariant length is larger than longest_invariant.
+            longest_invarant: int, the specified maximal length of invariant, default to None. Stop
+                searching when the invariant length is larger than longest_invarant.
             scale_list: list, the list used to scale the theta of float into integer
-            invariants_dict: dict, dictionary of invariants where key is the selected columns 
+            invariants_dict: dict, dictionary of invariants where key is the selected columns
                 and value is the weights the of invariant
         """
         self.percentage = percentage
         self.epsilon = epsilon
-        self.longest_invariant = longest_invariant
+        self.longest_invarant = longest_invarant
         self.scale_list = scale_list
         self.invariants_dict = None
+        self.invariants_count_dict = None
+        self.events = None
 
     def fit(self, X, events):
         """
@@ -38,13 +40,12 @@ class InvariantsMiner(object):
         invar_dim = self._estimate_invarant_space(X)
         self._invariants_search(X, invar_dim, events)
 
-    def predict(self, X, X_idx):
+    def predict(self, X):
         """ Predict anomalies with mined invariants
 
         Arguments
         ---------
             X: the input event count matrix
-            X_idx: the id of event count matrix
 
         Returns
         -------
@@ -60,7 +61,54 @@ class InvariantsMiner(object):
         y_pred = (y_sum > 1e-6).astype(int)
         for idx, value in enumerate(y_pred):
             if value > 0:
-                print("Mined invalid: ", X_idx[idx])
+                print(idx)
+        return y_pred
+
+    def predict_new(self, X, orig_data):
+        """ Predict anomalies with mined invariants
+
+        Arguments
+        ---------
+            X: the input event count matrix
+
+        Returns
+        -------
+            y_pred: ndarray, the predicted label vector of shape (num_instances,)
+        """
+
+        # print("invariants_dict: ", self.invariants_dict)
+        # np.set_printoptions(threshold=np.inf)
+        invariants_count_dict = dict()
+        for cols, theta in self.invariants_dict.items():
+            count = 0
+            for i in range(X.shape[0]):
+                if np.sum([a ** 2 for a in X[i, cols]]) == 0:
+                    continue
+                dv = np.dot(X[i, cols], np.array(theta))
+                if dv == 0:
+                    count += 1
+            invariants_count_dict[cols] = count
+        self.invariants_count_dict = invariants_count_dict
+
+        uniq_dict = dict()
+        y_sum = np.zeros(X.shape[0])
+        for cols, theta in self.invariants_dict.items():
+            y_sum += np.fabs(np.dot(X[:, cols], np.array(theta)))
+        # print("y_sum", y_sum)
+        y_pred = (y_sum > 1e-6).astype(int)
+        total = 0
+        for idx, value in enumerate(y_pred):
+            if value > 0:
+                event_repr = ",".join(orig_data.iloc[idx][1])
+                if event_repr in uniq_dict:
+                    uniq_dict[event_repr] += 1
+                else:
+                    uniq_dict[event_repr] = 1
+                # print(idx, orig_data.iloc[idx][1])
+                total += 1
+        print("uniq_dict len: ", len(uniq_dict))
+        # print(uniq_dict)
+        print("Total unmatched invalid: ", total)
         return y_pred
 
     def evaluate(self, X, y_true):
@@ -129,7 +177,9 @@ class InvariantsMiner(object):
         FLAG_break_loop = False
         # check invariant of more columns
         while len(item_list) != 0:
-            if length > self.longest_invariant:
+            if length >= 4:
+                break
+            if self.longest_invarant and len(item_list[0]) >= self.longest_invarant:
                 break
             # item_list组合出长度为length的新集合
             joined_item_list = self._join_set(item_list, length)  # generate new invariant candidates
@@ -170,16 +220,37 @@ class InvariantsMiner(object):
         self.events = events
         self.get_actual_event_repr()
 
+    def load_invariants(self, file_name, events):
+        with open(file_name) as f:
+            contents = json.load(f)
+            template_map = contents['EventTemplate']
+            print(template_map)
+            invariant_dict = dict()
+            event_list = list(events)
+            for invariant in contents['Invariants']:
+                event_keys = [idx for idx in invariant if idx in event_list]
+                print(event_keys)
+                cal_key = tuple([event_list.index(idx) for idx in event_keys])
+                invariant_dict[cal_key] = [invariant[idx] for idx in event_keys]
+            print("Current invarints: ", invariant_dict)
+            self.invariants_dict = invariant_dict
+            self.events = events
+
     def get_actual_event_repr(self):
+        print("Invariant dict: ")
         if isinstance(self.invariants_dict, dict):
             for key, value in self.invariants_dict.items():
                 actual_key = tuple([self.events[idx] for idx in key])
                 print(actual_key, value)
-
+        print("Invariant count: ")
+        if isinstance(self.invariants_count_dict, dict):
+            for key, value in self.invariants_count_dict.items():
+                actual_key = tuple([self.events[idx] for idx in key])
+                print(actual_key, value)
         pass
 
     def _compute_eigenvector(self, X):
-        """ calculate the smallest eigenvalue and corresponding eigenvector (theta in the paper) 
+        """ calculate the smallest eigenvalue and corresponding eigenvector (theta in the paper)
             for a given sub_matrix
 
         Arguments
@@ -328,3 +399,8 @@ class InvariantsMiner(object):
         """
         precision, recall, f1, _ = precision_recall_fscore_support(y_true, y_pred, average='binary')
         return precision, recall, f1
+
+
+if __name__ == '__main__':
+    item_list = [[1, 2], [2], [3], [4], [5]]
+    print(InvariantsMiner()._join_set(item_list, 3))

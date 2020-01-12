@@ -3,6 +3,7 @@
 
 import os
 import re
+import string
 from datetime import datetime
 
 import pandas as pd
@@ -30,23 +31,20 @@ class Node:
 
 class LogParser:
     """ LogParser class
-
     Attributes
     ----------
-        path : the path of the input file
-        logName : the file name of the input file
-        savePath : the path of the output file
-        tau : how much percentage of tokens matched to merge a log message
     """
 
-    def __init__(self, indir='./', outdir='./result/', log_format=None, tau=0.5, rex=[]):
-        self.path = indir
-        self.logName = None
+    def __init__(self, es_reader, outdir='./result/', log_format=None, tau=0.5, rex=[], keep_para=True):
+        self.es_reader = es_reader
+        self.index_name = None
+        self.indexName = None
         self.savePath = outdir
         self.tau = tau
         self.logformat = log_format
         self.df_log = None
         self.rex = rex
+        self.keep_para = keep_para
 
     def LCS(self, seq1, seq2):
         lengths = [[0 for j in range(len(seq2) + 1)] for i in range(len(seq1) + 1)]
@@ -74,18 +72,15 @@ class LogParser:
         return result
 
     def SimpleLoopMatch(self, logClustL, seq):
-        retLogClust = None
-
         for logClust in logClustL:
             if float(len(logClust.logTemplate)) < 0.5 * len(seq):
                 continue
-
-            # If the template is a subsequence of seq
-            it = iter(seq)
-            if all(token in seq or token == '<*>' for token in logClust.logTemplate):
+            # Check the template is a subsequence of seq (we use set checking as a proxy here for speedup since
+            # incorrect-ordering bad cases rarely occur in logs)
+            token_set = set(seq)
+            if all(token in token_set or token == '<*>' for token in logClust.logTemplate):
                 return logClust
-
-        return retLogClust
+        return None
 
     def PrefixTreeMatch(self, parentn, seq, idx):
         retLogClust = None
@@ -93,7 +88,7 @@ class LogParser:
         for i in range(idx, length):
             if seq[i] in parentn.childD:
                 childn = parentn.childD[seq[i]]
-                if childn.logClust is not None:
+                if (childn.logClust is not None):
                     constLM = [w for w in childn.logClust.logTemplate if w != '<*>']
                     if float(len(constLM)) >= self.tau * length:
                         return childn.logClust
@@ -127,7 +122,6 @@ class LogParser:
         return retLogClust
 
     def getTemplate(self, lcs, seq):
-        print("current lcs: ", lcs, "seq", seq)
         retVal = []
         if not lcs:
             return retVal
@@ -199,12 +193,14 @@ class LogParser:
 
         self.df_log['EventId'] = ids
         self.df_log['EventTemplate'] = templates
-        self.df_log.to_csv(os.path.join(self.savePath, self.logname + '_structured.csv'), index=False)
-        df_event.to_csv(os.path.join(self.savePath, self.logname + '_templates.csv'), index=False)
+        if self.keep_para:
+            self.df_log["ParameterList"] = self.df_log.apply(self.get_parameter_list, axis=1)
+        self.df_log.to_csv(os.path.join(self.savePath, self.index_name + '_structured.csv'), index=False)
+        df_event.to_csv(os.path.join(self.savePath, self.index_name + '_templates.csv'), index=False)
 
     def printTree(self, node, dep):
         pStr = ''
-        for i in range(dep):
+        for i in xrange(dep):
             pStr += '\t'
 
         if node.token == '':
@@ -218,30 +214,20 @@ class LogParser:
         for child in node.childD:
             self.printTree(node.childD[child], dep + 1)
 
-    def parse(self, logname):
+    def parse(self, index_name):
         starttime = datetime.now()
-        print('Parsing file: ' + os.path.join(self.path, logname))
-        self.logname = logname
+        print('Parsing index: ', index_name)
+        self.index_name = index_name
         self.load_data()
         rootNode = Node()
-        logCluL = []  # LCSMap: 存放所有已经parsed出的LCSObjects.
-        # do some initial
-        # event0 = ["<*>", "session", "opened", "for", "user",  "<*>", "<*>"]
-        # newCluster = LCSObject(logTemplate=event0, logIDL=[])
-        # logCluL.append(newCluster)
-        # self.addSeqToPrefixTree(rootNode, newCluster)
-        # event1 = ["<*>", "session", "closed", "for", "user",  "<*>", "<*>"]
-        # newCluster = LCSObject(logTemplate=event1, logIDL=[])
-        # logCluL.append(newCluster)
-        # self.addSeqToPrefixTree(rootNode, newCluster)
+        logCluL = []
 
         count = 0
         for idx, line in self.df_log.iterrows():
             logID = line['LineId']
             logmessageL = list(filter(lambda x: x != '', re.split(r'[\s=:,]', self.preprocess(line['Content']))))
-            # logmessageL = list(filter(lambda x: x != '', re.split(r'[\s]', self.preprocess(line['Content']))))
             constLogMessL = [w for w in logmessageL if w != '<*>']
-            # print("constLogMessL", constLogMessL)
+
             # Find an existing matched log cluster
             matchCluster = self.PrefixTreeMatch(rootNode, constLogMessL, 0)
 
@@ -260,8 +246,6 @@ class LogParser:
                     else:
                         newTemplate = self.getTemplate(self.LCS(logmessageL, matchCluster.logTemplate),
                                                        matchCluster.logTemplate)
-                        print("origTemp", matchCluster.logTemplate)
-                        print("newTemp", newTemplate)
                         if ' '.join(newTemplate) != ' '.join(matchCluster.logTemplate):
                             self.removeSeqFromPrefixTree(rootNode, matchCluster)
                             matchCluster.logTemplate = newTemplate
@@ -278,44 +262,10 @@ class LogParser:
         self.outputResult(logCluL)
         print('Parsing done. [Time taken: {!s}]'.format(datetime.now() - starttime))
 
-    def simple_lcs_parse(self, logname):
-        starttime = datetime.now()
-        print('Parsing file: ' + os.path.join(self.path, logname))
-        self.logname = logname
-        self.load_data()
-        logCluL = []  # LCSMap: 存放所有已经parsed出的LCSObjects.
-
-        count = 0
-        for idx, line in self.df_log.iterrows():
-            logID = line['LineId']
-            logmessageL = self.preprocess(line['Content']).strip().split()
-            # Find an existing matched log cluster
-            matchCluster = self.LCSMatch(logCluL, logmessageL)
-
-            if matchCluster is None:
-                newCluster = LCSObject(logTemplate=logmessageL, logIDL=[logID])
-                logCluL.append(newCluster)
-            # Add the new log message to the existing cluster
-            else:
-                newTemplate = self.getTemplate(self.LCS(logmessageL, matchCluster.logTemplate),
-                                               matchCluster.logTemplate)
-                if ' '.join(newTemplate) != ' '.join(matchCluster.logTemplate):
-                    matchCluster.logTemplate = newTemplate
-            if matchCluster:
-                matchCluster.logIDL.append(logID)
-            count += 1
-            if count % 1000 == 0 or count == len(self.df_log):
-                print('Processed {0:.1f}% of log lines.'.format(count * 100.0 / len(self.df_log)))
-
-        if not os.path.exists(self.savePath):
-            os.makedirs(self.savePath)
-
-        self.outputResult(logCluL)
-        print('Parsing done. [Time taken: {!s}]'.format(datetime.now() - starttime))
-
     def load_data(self):
         headers, regex = self.generate_logformat_regex(self.logformat)
-        self.df_log = self.log_to_dataframe(os.path.join(self.path, self.logname), regex, headers, self.logformat)
+        # self.df_log = self.log_to_dataframe(os.path.join(self.path, self.index_name), regex, headers, self.logformat)
+        self.df_log = self.es_to_dataframe(self.index_name, regex, headers, self.logformat)
 
     def preprocess(self, line):
         for currentRex in self.rex:
@@ -323,32 +273,43 @@ class LogParser:
         return line
 
     def log_to_dataframe(self, log_file, regex, headers, logformat):
-        """ Function to transform log file to dataframe 
+        """ Function to transform log file to dataframe
         """
         log_messages = []
         linecount = 0
-        with open(log_file, 'r', errors='ignore') as fin:
+        with open(log_file, 'r') as fin:
             for line in fin.readlines():
-                # print('line:', line)
                 line = re.sub(r'[^\x00-\x7F]+', '<NASCII>', line)
                 try:
                     match = regex.search(line.strip())
                     message = [match.group(header) for header in headers]
-                    print(message)
                     log_messages.append(message)
                     linecount += 1
-                    if linecount % 10000 == 1:
-                        print(linecount)
-                    # if linecount > 1000000:
-                    #     print("Exceed Threashold: ")
-                    #     break
                 except Exception as e:
-                    continue
-        print("finish read file", log_file)
+                    pass
         logdf = pd.DataFrame(log_messages, columns=headers)
         logdf.insert(0, 'LineId', None)
         logdf['LineId'] = [i + 1 for i in range(linecount)]
-        print(logdf)
+        return logdf
+
+    def es_to_dataframe(self, index_name, regex, headers, logformat):
+        """ Function to transform elasticsearch logs to dataframe
+        """
+        log_messages = []
+        linecount = 0
+        for line in self.es_reader.matchall(index_name):
+            line = re.sub(r'[^\x00-\x7F]+', '<NASCII>', line)
+            try:
+                match = regex.search(line.strip())
+                message = [match.group(header) for header in headers]
+                log_messages.append(message)
+                linecount += 1
+            except Exception as e:
+                pass
+
+        logdf = pd.DataFrame(log_messages, columns=headers)
+        logdf.insert(0, 'LineId', None)
+        logdf['LineId'] = [i + 1 for i in range(linecount)]
         return logdf
 
     def generate_logformat_regex(self, logformat):
@@ -370,14 +331,14 @@ class LogParser:
         print(headers, regex)
         return headers, regex
 
-    # def get_parameter_list(self, row):
-    #     template_regex = re.sub(r"\s<.{1,5}>\s", "<*>", row["EventTemplate"])
-    #     if "<*>" not in template_regex: return []
-    #     template_regex = re.sub(r'([^A-Za-z0-9])', r'\\\1', template_regex)
-    #     template_regex = re.sub(r'\\ +', r'[^A-Za-z0-9]+', template_regex)
-    #     template_regex = "^" + template_regex.replace("\<\*\>", "(.*?)") + "$"
-    #     parameter_list = re.findall(template_regex, row["Content"])
-    #     parameter_list = parameter_list[0] if parameter_list else ()
-    #     parameter_list = list(parameter_list) if isinstance(parameter_list, tuple) else [parameter_list]
-    #     parameter_list = [para.strip(string.punctuation).strip(' ') for para in parameter_list]
-    #     return parameter_list
+    def get_parameter_list(self, row):
+        template_regex = re.sub(r"\s<.{1,5}>\s", "<*>", row["EventTemplate"])
+        if "<*>" not in template_regex: return []
+        template_regex = re.sub(r'([^A-Za-z0-9])', r'\\\1', template_regex)
+        template_regex = re.sub(r'\\ +', r'[^A-Za-z0-9]+', template_regex)
+        template_regex = "^" + template_regex.replace("\<\*\>", "(.*?)") + "$"
+        parameter_list = re.findall(template_regex, row["Content"])
+        parameter_list = parameter_list[0] if parameter_list else ()
+        parameter_list = list(parameter_list) if isinstance(parameter_list, tuple) else [parameter_list]
+        parameter_list = [para.strip(string.punctuation).strip(' ') for para in parameter_list]
+        return parameter_list
